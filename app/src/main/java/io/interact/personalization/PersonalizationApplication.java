@@ -3,6 +3,7 @@ package io.interact.personalization;
 import java.util.ArrayList;
 
 import io.interact.personalization.services.csv.CSVParser;
+import io.interact.personalization.services.postgres.PostgresController;
 import io.interact.personalization.utils.Logger;
 
 public class PersonalizationApplication {
@@ -49,6 +50,14 @@ public class PersonalizationApplication {
 	// ========================== MAIN =====================================
 	// =====================================================================
 	public static void main(String[] args) throws Exception {
+
+		// String url = "jdbc:postgresql://localhost/personalization-service";
+		// Properties props = new Properties();
+		// props.setProperty("user", "mikus"); // TODO set up db with another user
+		// props.setProperty("password", "S!l@ta");
+		// props.setProperty("ssl", "true");
+		// Connection conn = DriverManager.getConnection(url, props);
+		PostgresController.connectDatabase();
 
 		setUserActions(parseUserActionsData());
 		logger.printArrayListOfStringArrays(userActions);
