@@ -1,69 +1,33 @@
 package io.interact.personalization;
 
-import java.util.ArrayList;
-
-import io.interact.personalization.services.csv.CSVParser;
-import io.interact.personalization.services.postgres.PostgresController;
-import io.interact.personalization.utils.Logger;
+import io.interact.personalization.services.card_handler.CardHandler;
+import io.interact.personalization.services.interest_handler.InterestHandler;
+import io.interact.personalization.services.user_handler.UserHandler;
 
 public class PersonalizationApplication {
-	private static final String userActionsFilePath = "/home/mikus/user_actions.csv";
-	private static final String userSegmentsFilePath = "/home/mikus/user_segments.csv";
-	private static final Logger logger = new Logger();
-
-	private static ArrayList<String[]> userActions = new ArrayList<String[]>();
-	private static ArrayList<String[]> userSegments = new ArrayList<String[]>();
 
 	// =====================================================================
 	// ===================== GETTERS & SETTERS =============================
 	// =====================================================================
-	public static ArrayList<String[]> getUserActions() {
-		return userActions;
-	}
-
-	public static void setUserActions(ArrayList<String[]> userActions) {
-		PersonalizationApplication.userActions = userActions;
-	}
-
-	public static ArrayList<String[]> getUserSegments() {
-		return userSegments;
-	}
-
-	public static void setUserSegments(ArrayList<String[]> userSegments) {
-		PersonalizationApplication.userSegments = userSegments;
-	}
 
 	// =====================================================================
 	// ========================== METHODS ==================================
 	// =====================================================================
-	public static ArrayList<String[]> parseUserActionsData() {
-		CSVParser parser = new CSVParser();
-		return parser.getArrayListFromCSV(userActionsFilePath);
+
+	public static void setupInputTables() {
+		UserHandler.importUserData();
+		CardHandler.importCards();
 	}
 
-	public static ArrayList<String[]> parseUserSegmentsData() {
-		CSVParser parser = new CSVParser();
-		return parser.getArrayListFromCSV(userSegmentsFilePath);
+	public static void setupSegmentTagInterestTable() {
+		InterestHandler.fillSTINCItable();
 	}
 
 	// =====================================================================
 	// ========================== MAIN =====================================
 	// =====================================================================
 	public static void main(String[] args) throws Exception {
-
-		// String url = "jdbc:postgresql://localhost/personalization-service";
-		// Properties props = new Properties();
-		// props.setProperty("user", "mikus"); // TODO set up db with another user
-		// props.setProperty("password", "S!l@ta");
-		// props.setProperty("ssl", "true");
-		// Connection conn = DriverManager.getConnection(url, props);
-		PostgresController.connectDatabase();
-
-		setUserActions(parseUserActionsData());
-		logger.printArrayListOfStringArrays(userActions);
-
-		setUserSegments(parseUserSegmentsData());
-		logger.printArrayListOfStringArrays(userSegments);
-
+		setupInputTables();
+		setupSegmentTagInterestTable();
 	}
 }

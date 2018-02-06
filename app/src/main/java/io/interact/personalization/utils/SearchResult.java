@@ -8,6 +8,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 
 public class SearchResult {
+	// TODO investigate: is this used?
 
 	private int value1 = 1;
 	private String value2 = "abc";
