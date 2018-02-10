@@ -126,6 +126,11 @@ public class InterestHandler {
 			}
 		}
 	}
+	
+	public static float generateTagInterestProbabilityForUserWithSubSegments(List<String> subSegments) {
+		
+		return 0;
+	}
 
 	// =====================================================================
 	// ========================== MAIN =====================================

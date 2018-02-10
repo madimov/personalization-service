@@ -44,13 +44,8 @@ public class UserHandler {
 	}
 
 	public static void importUserData() {
-		// private static ArrayList<String[]> userActionsData = new
-		// ArrayList<String[]>();
-		// userActionsData = parseUserActionsData();
-		// Logger.printArrayListOfStringArrays(userActionsData);
 		importUserSegmentData();
 		importUserActionsData();
-
 		/*
 		 * USE THIS for immediate casting from csv to postgres !!!!!!!!!!!!!!!!!!!
 		 * http://www.postgresqltutorial.com/postgresql-cast/
