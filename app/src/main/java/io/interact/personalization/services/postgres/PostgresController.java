@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import io.interact.personalization.utils.Logger;
 
@@ -101,13 +102,70 @@ public class PostgresController {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		resultsFormatted = convert1DListOfHashMapsToListOfStrings(results, columnToReturn);
+		resultsFormatted = convertListOf1DHashMapsToListOfStrings(results, columnToReturn);
 
 		// Logger.printArrayListOfStrings((ArrayList<String>) resultsFormatted);
 		return resultsFormatted;
 	}
 
-	public static List<String> convert1DListOfHashMapsToListOfStrings(List<HashMap<String, Object>> listOfHashMaps,
+	// public static List<String> selectColumnCells(String tableName, List<String>
+	// columnsToCheck,
+	// List<String> valuesToCheck, List<String> columnsToSelect) throws SQLException
+	// {
+	// String checkStatement = buildCheckStatement(columnsToCheck, valuesToCheck);
+	// String selectStatement = buildSelectStatement(columnsToSelect);
+	// java.sql.Statement st = null;
+	// ResultSet rs = null;
+	// List<HashMap<String, Object>> results = new ArrayList<HashMap<String,
+	// Object>>();
+	// List<String> resultsFormatted = new ArrayList<String>();
+	// try {
+	// st = conn.createStatement();
+	// String query = "SELECT " + columnToReturn + " FROM " + tableName + " WHERE "
+	// + checkStatement;
+	// // Logger.print(query);
+	// rs = st.executeQuery(query);
+	// results = convertResultSetToList(rs);
+	// // Logger.printListOfHashMaps(results);
+	// rs.close();
+	// st.close();
+	// } catch (Exception e) {
+	// e.printStackTrace();
+	// }
+	// resultsFormatted = convert1DListOfHashMapsToListOfStrings(results,
+	// columnToReturn);
+	//
+	// // Logger.printArrayListOfStrings((ArrayList<String>) resultsFormatted);
+	// return resultsFormatted;
+	// }
+
+	public static List<String> selectRow(String tableName, List<String> columnsToCheck, List<String> valuesToCheck,
+			List<String> columnsToSelect) {
+		String selectStatement = buildSelectStatement(columnsToSelect);
+		String checkStatement = buildCheckStatement(columnsToCheck, valuesToCheck);
+		java.sql.Statement st = null;
+		ResultSet rs = null;
+		List<HashMap<String, Object>> results = new ArrayList<HashMap<String, Object>>();
+		List<String> resultsFormatted = new ArrayList<String>();
+		try {
+			st = conn.createStatement();
+			String query = "SELECT " + selectStatement + " FROM " + tableName + " WHERE " + checkStatement;
+			Logger.print(query);
+			rs = st.executeQuery(query);
+			results = convertResultSetToList(rs);
+			// Logger.printListOfHashMaps(results);
+			rs.close();
+			st.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		resultsFormatted = convertListOfOneHashMapToListOfStrings(results);
+
+		// Logger.printArrayListOfStrings((ArrayList<String>) resultsFormatted);
+		return resultsFormatted;
+	}
+
+	public static List<String> convertListOf1DHashMapsToListOfStrings(List<HashMap<String, Object>> listOfHashMaps,
 			String key) {
 
 		List<String> values = new ArrayList<String>();
@@ -115,6 +173,21 @@ public class PostgresController {
 			String value = (String) listOfHashMaps.get(i).get(key).toString();
 			values.add(value);
 		}
+		return values;
+	}
+
+	public static List<String> convertListOfOneHashMapToListOfStrings(List<HashMap<String, Object>> listOfHashMaps) {
+
+		List<String> values = new ArrayList<String>();
+		for (int i = 0; i < listOfHashMaps.size(); i++) {
+			Set<String> keys = listOfHashMaps.get(i).keySet();
+			for (String key : keys) {
+				// System.out.println(key);
+				String value = (String) listOfHashMaps.get(i).get(key).toString();
+				values.add(value);
+			}
+		}
+		// Logger.printArrayListOfStrings((ArrayList<String>) values);
 		return values;
 	}
 
@@ -206,6 +279,7 @@ public class PostgresController {
 		try {
 			st = conn.createStatement();
 			rs = st.executeQuery("SELECT segment, " + columnName + " FROM " + tableName + ";");
+			// FIXME "segment" should be passed in!
 			results = convertResultSetToList(rs);
 			// Logger.printListOfHashMaps(results);
 		} catch (Exception e) {
@@ -214,6 +288,28 @@ public class PostgresController {
 		rs.close();
 		st.close();
 		return results;
+	}
+
+	public static List<String> selectDistinctFromColumn(String tableName, String columnName) throws SQLException {
+		// TODO Auto-generated method stub
+		java.sql.Statement st = null;
+		ResultSet rs = null;
+		List<HashMap<String, Object>> results = new ArrayList<HashMap<String, Object>>();
+		List<String> resultsFormatted = new ArrayList<String>();
+		try {
+			st = conn.createStatement();
+			rs = st.executeQuery("SELECT DISTINCT " + columnName + " FROM " + tableName);
+			results = convertResultSetToList(rs);
+			// Logger.printListOfHashMaps(results);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		rs.close();
+		st.close();
+
+		resultsFormatted = convertListOf1DHashMapsToListOfStrings(results, columnName);
+
+		return resultsFormatted;
 	}
 
 	public static boolean checkRowExists(String tableName, List<String> columnsToCheck, List<String> valuesToCheck) {
@@ -257,7 +353,7 @@ public class PostgresController {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		resultsFormatted = convert1DListOfHashMapsToListOfStrings(results, "column_name");
+		resultsFormatted = convertListOf1DHashMapsToListOfStrings(results, "column_name");
 		// Logger.printArrayListOfStrings((ArrayList<String>) resultsFormatted);
 		return resultsFormatted;
 	}
@@ -284,7 +380,7 @@ public class PostgresController {
 		try {
 			for (int col = 0; col < columnNames.size(); col++) {
 				creationStatement += columnNames.get(col) + " " + initialDataType;
-				if (col != columnNames.size() - 1) { // TODO simplify
+				if (col != columnNames.size() - 1) {
 					creationStatement += ",";
 				}
 			}
@@ -303,10 +399,15 @@ public class PostgresController {
 
 		try {
 			for (int col = 0; col < columnsToCheck.size(); col++) {
-				if (col == columnsToCheck.size() - 1) {
-					checkStatement += columnsToCheck.get(col) + " = " + valuesToCheck.get(col);
+				checkStatement += columnsToCheck.get(col);
+				if (valuesToCheck.get(col).contains("NULL")) {
+					checkStatement += " IS ";
 				} else {
-					checkStatement += columnsToCheck.get(col) + " = " + valuesToCheck.get(col) + " AND ";
+					checkStatement += " = ";
+				}
+				checkStatement += valuesToCheck.get(col);
+				if (col != columnsToCheck.size() - 1) {
+					checkStatement += " AND ";
 				}
 			}
 		} catch (Exception e) {
@@ -346,6 +447,23 @@ public class PostgresController {
 			e.printStackTrace();
 		}
 		return insertStatement;
+	}
+
+	public static String buildSelectStatement(List<String> columnNames) {
+
+		String selectStatement = "";
+
+		try {
+			for (int col = 0; col < columnNames.size(); col++) {
+				selectStatement += columnNames.get(col);
+				if (col != columnNames.size() - 1) {
+					selectStatement += ", ";
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return selectStatement;
 	}
 
 	// =====================================================================

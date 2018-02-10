@@ -33,6 +33,7 @@ public class InterestHandler {
 		List<HashMap<String, Object>> segmentsAndSubSegments = new ArrayList<HashMap<String, Object>>();
 		segmentsAndSubSegments = UserHandler.getSegmentsAndSubSegments();
 		Logger.printListOfHashMaps(segmentsAndSubSegments);
+		Logger.print("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
 		try {
 			for (int i = 0; i < numSubSegments; i++) {
 				String segment = (String) segmentsAndSubSegments.get(i).get("segment");
@@ -126,10 +127,81 @@ public class InterestHandler {
 			}
 		}
 	}
-	
-	public static float generateTagInterestProbabilityForUserWithSubSegments(List<String> subSegments) {
-		
-		return 0;
+
+	public static boolean checkExistsSubSegmentTagInterestProbability(String subSegment, String cardTag) {
+		List<String> columnsToCheck = new ArrayList<String>();
+		columnsToCheck.add("sub_segment");
+		columnsToCheck.add(cardTag);
+		List<String> valuesToCheck = new ArrayList<String>();
+		valuesToCheck.add(subSegment);
+		valuesToCheck.add("NOT NULL");
+		boolean probabilityExists = false;
+		probabilityExists = PostgresController.checkRowExists("STINCI_recipes", columnsToCheck, valuesToCheck);
+		// Logger.print(probabilityExists);
+		return probabilityExists;
+	}
+
+	public static float getSubSegmentTagInterestProbability(String subSegment, String cardTag) {
+		List<String> columnsToCheck = new ArrayList<String>();
+		columnsToCheck.add("sub_segment");
+		List<String> valuesToCheck = new ArrayList<String>();
+		valuesToCheck.add(subSegment);
+		List<String> interestProbability = new ArrayList<String>();
+		try {
+			interestProbability = PostgresController.selectColumnCells("STINCI_recipes", columnsToCheck, valuesToCheck,
+					cardTag);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		float probability = Float.parseFloat(interestProbability.get(0));
+		// Logger.print(probability);
+		return probability;
+	}
+
+	public static float generateTagInterestProbabilityForUserWithSubSegments(String cardTag, List<String> subSegments) {
+
+		float userInterestProbability;
+		float subSegmentInterestProbabilitySum = 0;
+		int numSubSegmentsWithData = 0;
+		float subSegmentInterestProbability;
+
+		for (int k = 0; k < subSegments.size(); k++) {
+			String subSegment = subSegments.get(k);
+			if (checkExistsSubSegmentTagInterestProbability("'" + subSegment + "'", cardTag)) {
+				subSegmentInterestProbability = getSubSegmentTagInterestProbability("'" + subSegment + "'", cardTag);
+				subSegmentInterestProbabilitySum += subSegmentInterestProbability;
+				numSubSegmentsWithData++;
+			}
+		}
+		userInterestProbability = subSegmentInterestProbabilitySum / numSubSegmentsWithData;
+		// Logger.print(userInterestProbability);
+		return userInterestProbability;
+	}
+
+	public static float generateOverallUserInterestProbability(String userID) {
+
+		List<String> subSegments = new ArrayList<String>();
+		subSegments = UserHandler.getUserSubSegments(userID);
+
+		float overallUserTagInterestProbability = 0;
+		float overallUserTagInterestProbabilitySum = 0;
+		int numTagsThatHaveInterestProbability = 0;
+
+		List<String> cardTags = new ArrayList<String>();
+		cardTags = CardHandler.getAllCardTags();
+		for (int k = 0; k < cardTags.size(); k++) {
+			String cardTag = cardTags.get(k);
+			float userTagInterestProbability = generateTagInterestProbabilityForUserWithSubSegments(cardTag,
+					subSegments);
+			if (!Float.isNaN(userTagInterestProbability)) {
+				overallUserTagInterestProbabilitySum += userTagInterestProbability;
+				numTagsThatHaveInterestProbability++;
+			}
+		}
+
+		overallUserTagInterestProbability = overallUserTagInterestProbabilitySum / numTagsThatHaveInterestProbability;
+		Logger.print(overallUserTagInterestProbability);
+		return overallUserTagInterestProbability;
 	}
 
 	// =====================================================================
@@ -140,14 +212,21 @@ public class InterestHandler {
 		PostgresController.connectDatabase();
 
 		try {
-			UserHandler.importUserData();
-			UserHandler.processUserSegmentData();
-			UserHandler.processUserActionsData();
+			// UserHandler.importUserData();
+			// UserHandler.processUserSegmentData();
+			// UserHandler.processUserActionsData();
+			// resetProbabilitiesInSTINCItable();
+			// generateInterestProbabilities();
 
-			resetProbabilitiesInSTINCItable();
-			generateInterestProbabilities();
+			// checkExistsSubSegmentTagInterestProbability("'20-29'", "drink");
+			// getSubSegmentTagInterestProbability("'20-29'", "drink");
+			// checkExistsSubSegmentTagInterestProbability("'lifestyle'", "drink");
+			// getSubSegmentTagInterestProbability("'lifestyle'", "drink");
+
+			generateOverallUserInterestProbability("1515541645148868");
+
 		} catch (Exception e) {
-			e.getMessage();
+			e.printStackTrace();
 		}
 	}
 }

@@ -255,18 +255,30 @@ public class UserHandler {
 	}
 
 	public static List<HashMap<String, Object>> getSegmentsAndSubSegments() {
-		// TODO Auto-generated method stub
 		// TODO decide: move this to InterestHandler, as it accesses STINCI table?
 		List<HashMap<String, Object>> segmentsAndSubSegments = new ArrayList<HashMap<String, Object>>();
 		try {
 			segmentsAndSubSegments = PostgresController.selectColumn("STINCI_recipes", "sub_segment");
-			// Logger.printListOfHashMaps(segmentsAndSubSegments);
+			Logger.printListOfHashMaps(segmentsAndSubSegments);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
 		return segmentsAndSubSegments;
+	}
+
+	public static List<String> getSegments() {
+		// TODO decide: move this to InterestHandler, as it accesses STINCI table?
+		List<String> segments = new ArrayList<String>();
+		try {
+			segments = PostgresController.selectDistinctFromColumn("STINCI_recipes", "segment");
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// Logger.printArrayListOfStrings((ArrayList<String>) segments);
+		return segments;
 	}
 
 	public static boolean existsUserWithSubSegments(List<String> segments, List<String> subSegments) {
@@ -334,6 +346,21 @@ public class UserHandler {
 		}
 		// Logger.print(userInterestInCard);
 		return Float.parseFloat(userInterestInCard.get(0));
+	}
+
+	public static List<String> getUserSubSegments(String userID) {
+
+		List<String> userSubSegments = new ArrayList<String>();
+		List<String> columnsToReturn = new ArrayList<String>();
+		List<String> columnToCheck = new ArrayList<String>();
+		columnToCheck.add("user_id");
+		List<String> valueToCheck = new ArrayList<String>();
+		valueToCheck.add("'" + userID + "'");
+
+		columnsToReturn = getSegments();
+		userSubSegments = PostgresController.selectRow("user_segments", columnToCheck, valueToCheck, columnsToReturn);
+		// Logger.printArrayListOfStrings((ArrayList<String>) userSubSegments);
+		return userSubSegments;
 	}
 
 	// =====================================================================
