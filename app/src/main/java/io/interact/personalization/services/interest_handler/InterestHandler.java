@@ -19,93 +19,6 @@ public class InterestHandler {
 	// ========================== METHODS ==================================
 	// =====================================================================
 
-	// public static void fillSTINCItable() {
-	// // for every user sub-segment,.............................................
-	// // ..if there are any users that fit the sub-segment.......................
-	// // ....for every card tag..................................................
-	// // ......for every card with that tag......................................
-	// // ........for every user from this sub-segment............................
-	// // ..........if this user gave this card feedback..........................
-	// // ............get this user's feedback for this card......................
-	// // ............update average feedback for this sub-segment for this tag...
-	//
-	// // TODO try alternative version written in notes
-	//
-	// int numSubSegments = UserHandler.getNumSubSegments();
-	// List<HashMap<String, Object>> segmentsAndSubSegments = new
-	// ArrayList<HashMap<String, Object>>();
-	// segmentsAndSubSegments = UserHandler.getSegmentsAndSubSegments();
-	// Logger.printListOfHashMaps(segmentsAndSubSegments);
-	// try {
-	// for (int i = 0; i < numSubSegments; i++) {
-	// String segment = (String) segmentsAndSubSegments.get(i).get("segment");
-	// String subSegment = (String)
-	// segmentsAndSubSegments.get(i).get("sub_segment");
-	// Logger.print(segment + ": " + subSegment);
-	// List<String> segmentsToCheck = new ArrayList<String>();
-	// List<String> subSegmentsToCheck = new ArrayList<String>();
-	// segmentsToCheck.add(segment);
-	// subSegmentsToCheck.add("'" + subSegment + "'");
-	// if (UserHandler.existsUserWithSubSegments(segmentsToCheck,
-	// subSegmentsToCheck)) {
-	// List<String> usersWithSubSegments = new ArrayList<String>();
-	// usersWithSubSegments = UserHandler.getUsersWithSubSegments(segmentsToCheck,
-	// subSegmentsToCheck);
-	// List<String> cardTags = new ArrayList<String>();
-	// cardTags = CardHandler.getAllCardTags();
-	// for (int k = 0; k < cardTags.size(); k++) {
-	// String cardTag = cardTags.get(k);
-	// Logger.print("..." + cardTag);
-	// List<String> cardsWithTag = new ArrayList<String>();
-	// List<String> tagsToCheck = new ArrayList<String>();
-	// tagsToCheck.add(cardTag);
-	// cardsWithTag = CardHandler.getCardsWithTags(tagsToCheck);
-	// float averageTagInterest = 0;
-	// float sumOfTagInterest = 0;
-	// int sampleSizeForTag = 0;
-	// for (int p = 0; p < cardsWithTag.size(); p++) {
-	// String cardID = cardsWithTag.get(p);
-	// float averageCardInterest = 0;
-	// float sumOfCardInterest = 0;
-	// int sampleSizeForCard = 0;
-	// // Logger.print("......" + cardID);
-	// for (int j = 0; j < usersWithSubSegments.size(); j++) {
-	// String userID = usersWithSubSegments.get(j);
-	// // Logger.print("........." + userID);
-	// if (UserHandler.thisUserGaveFeedbackToThisCard(userID, cardID)) {
-	// float userInterestInCard = UserHandler.getUserInterestInCard(userID, cardID);
-	// Logger.print("......" + cardID);
-	// Logger.print("........." + userID);
-	// Logger.print("............" + userInterestInCard);
-	// sumOfCardInterest += userInterestInCard;
-	// sampleSizeForCard++;
-	// sampleSizeForTag++;
-	// }
-	// }
-	// if (sampleSizeForCard > 0) {
-	// averageCardInterest = sumOfCardInterest / sampleSizeForCard;
-	// sumOfTagInterest += averageCardInterest;
-	// }
-	// }
-	// if (sampleSizeForTag > 0) {
-	// averageTagInterest = sumOfTagInterest / (float) sampleSizeForTag;
-	// Logger.print("~~~~~~averageTagInterest = " + averageTagInterest);
-	// Logger.print("about to update " + subSegment + "-" + cardTag + " interest
-	// probability as "
-	// + averageTagInterest);
-	// PostgresController.updateTable("STINCI_recipes", cardTag,
-	// Float.toString(averageTagInterest), "sub_segment = '" + subSegment + "'");
-	// }
-	// }
-	// }
-	// }
-	// } catch (
-	//
-	// Exception e) {
-	// e.printStackTrace();
-	// }
-	// }
-
 	public static void generateInterestProbabilities() {
 		// for every user sub-segment,.............................................
 		// ..if there are any users that fit the sub-segment.......................
@@ -155,7 +68,7 @@ public class InterestHandler {
 		}
 	}
 
-	public static void generateSubSegmentCardInterestProbabilities(String subSegment, List<String> usersWithSubSegments,
+	public static void generateSubSegmentCardInterestProbabilities(String subSegment, List<String> usersWithSubSegment,
 			String cardTag, List<String> cardsWithTag) {
 		float averageTagInterest = 0;
 		float sumOfTagInterest = 0;
@@ -165,8 +78,8 @@ public class InterestHandler {
 			float averageCardInterest = 0;
 			float sumOfCardInterest = 0;
 			int sampleSizeForCard = 0;
-			for (int j = 0; j < usersWithSubSegments.size(); j++) {
-				String userID = usersWithSubSegments.get(j);
+			for (int j = 0; j < usersWithSubSegment.size(); j++) {
+				String userID = usersWithSubSegment.get(j);
 				if (UserHandler.thisUserGaveFeedbackToThisCard(userID, cardID)) {
 					float userInterestInCard = UserHandler.getUserInterestInCard(userID, cardID);
 					Logger.print("......" + cardID);
