@@ -1,6 +1,9 @@
 package io.interact.personalization.services.postgres;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
+import java.sql.SQLException;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -26,9 +29,27 @@ public class PostgresControllerTest {
 	public void tearDown() throws Exception {
 	}
 
+	// @Test
+	// public void performingUnsnoozeActionSholudSetContactSnoozedUntilToNull() {
+	// ContactDTO contact = new ContactDTO();
+	// contact.setSnoozedUntil(new Date());
+	// Action action = new Action();
+	// action.setActionType(ActionType.UNSNOOZE);
+	//
+	// actionPerformer.performAction(action, contact, mock(UserContextDTO.class));
+	//
+	// assertThat(contact.getSnoozedUntil()).isNull();
+	// }
+
 	@Test
 	public void testConnectDatabase() {
-		fail("Not yet implemented"); // TODO
+		try {
+			PostgresController.connectDatabase();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			fail("Not yet implemented"); // TODO
+		}
+		assertNotNull(PostgresController.conn);
 	}
 
 	@Test

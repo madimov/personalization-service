@@ -1,0 +1,9 @@
+io.interact.personalization
+io.interact.personalization.config
+io.interact.personalization.services.card_handler
+io.interact.personalization.services.content_manager
+io.interact.personalization.services.csv
+io.interact.personalization.services.interest_handler
+io.interact.personalization.services.postgres
+io.interact.personalization.services.user_handler
+io.interact.personalization.utils
