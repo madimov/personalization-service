@@ -62,7 +62,7 @@ public class Requester {
 			System.out.println(jsonBody);
 
 			httpConnection.setRequestProperty("Content-Type", "application/json");
-			httpConnection.setRequestProperty("authToken", "kss_0vYUvOQmiRw7TMk9DBrVmT");
+			httpConnection.setRequestProperty("authToken", "kss_0vYbm3ldqVk1AqVaDb2t5X");
 			// TODO move tokens and domains to config
 			httpConnection.setRequestProperty("body", jsonBody.toString());
 

@@ -1,6 +1,8 @@
 package io.interact.personalization.services.card_handler;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.jayway.jsonpath.JsonPath;
 
@@ -103,10 +105,32 @@ public class CardHandler {
 		}
 	}
 
+	public static List<String> getAllCardTags() {
+		List<String> cardTags = new ArrayList<String>();
+		cardTags = PostgresController.getColumnNames("cards");
+		cardTags.remove(0); // remove card_id column
+		return cardTags;
+	}
+
+	public static List<String> getCardsWithTags(List<String> tagsToCheck) {
+		List<String> valuesToCheck = new ArrayList<String>();
+		for (int i = 0; i < tagsToCheck.size(); i++) {
+			valuesToCheck.add("true");
+		}
+		List<String> cardsWithTags = new ArrayList<String>();
+		try {
+			cardsWithTags = PostgresController.selectColumnCells("cards", tagsToCheck, valuesToCheck, "card_id");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return cardsWithTags;
+	}
+
 	// =====================================================================
 	// ========================== MAIN =====================================
 	// =====================================================================
 	public static void main(String[] args) throws Exception {
-
+		importCards();
 	}
+
 }

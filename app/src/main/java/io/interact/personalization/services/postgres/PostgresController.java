@@ -82,7 +82,44 @@ public class PostgresController {
 		executeSQL(SQL);
 	}
 
+	public static List<String> selectColumnCells(String tableName, List<String> columnsToCheck,
+			List<String> valuesToCheck, String columnToReturn) throws SQLException {
+		String checkStatement = buildCheckStatement(columnsToCheck, valuesToCheck);
+		java.sql.Statement st = null;
+		ResultSet rs = null;
+		List<HashMap<String, Object>> results = new ArrayList<HashMap<String, Object>>();
+		List<String> resultsFormatted = new ArrayList<String>();
+		try {
+			st = conn.createStatement();
+			String query = "SELECT " + columnToReturn + " FROM " + tableName + " WHERE " + checkStatement;
+			// Logger.print(query);
+			rs = st.executeQuery(query);
+			results = convertResultSetToList(rs);
+			// Logger.printListOfHashMaps(results);
+			rs.close();
+			st.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		resultsFormatted = convert1DListOfHashMapsToListOfStrings(results, columnToReturn);
+
+		// Logger.printArrayListOfStrings((ArrayList<String>) resultsFormatted);
+		return resultsFormatted;
+	}
+
+	public static List<String> convert1DListOfHashMapsToListOfStrings(List<HashMap<String, Object>> listOfHashMaps,
+			String key) {
+
+		List<String> values = new ArrayList<String>();
+		for (int i = 0; i < listOfHashMaps.size(); i++) {
+			String value = (String) listOfHashMaps.get(i).get(key).toString();
+			values.add(value);
+		}
+		return values;
+	}
+
 	public static void executeSQL(String SQL) {
+		// Logger.print(SQL);
 		PreparedStatement pstmt = null;
 		try {
 			pstmt = conn.prepareStatement(SQL);
@@ -105,12 +142,20 @@ public class PostgresController {
 
 	public static void updateTable(String tableName, String column, String value, String condition)
 			throws SQLException {
-		String SQL = "UPDATE " + tableName + " SET " + column + " = + " + value + " WHERE " + condition;
+		String SQL = "UPDATE " + tableName + " SET " + column + " = " + value;
+		if (condition != "") {
+			SQL += " WHERE " + condition;
+		}
 		executeSQL(SQL);
 	}
 
 	public static void addColumn(String tableName, String columnName, String dataType) throws SQLException {
 		String SQL = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + dataType;
+		executeSQL(SQL);
+	}
+
+	public static void dropColumn(String tableName, String columnName) throws SQLException {
+		String SQL = "ALTER TABLE " + tableName + " DROP COLUMN " + columnName;
 		executeSQL(SQL);
 	}
 
@@ -153,7 +198,7 @@ public class PostgresController {
 		return numRowsInTable;
 	}
 
-	public static List<HashMap<String, Object>> getColumn(String tableName, String columnName) throws SQLException {
+	public static List<HashMap<String, Object>> selectColumn(String tableName, String columnName) throws SQLException {
 		// TODO Auto-generated method stub
 		java.sql.Statement st = null;
 		ResultSet rs = null;
@@ -179,19 +224,42 @@ public class PostgresController {
 		List<HashMap<String, Object>> results = new ArrayList<HashMap<String, Object>>();
 		try {
 			st = conn.createStatement();
-			rs = st.executeQuery(
-					"SELECT EXISTS (SELECT 1 FROM count(*) FROM " + tableName + " WHERE " + checkStatement + ";");
+			String query = "SELECT EXISTS (SELECT 1 FROM " + tableName + " WHERE " + checkStatement + ")";
+			// Logger.print(query);
+			rs = st.executeQuery(query);
 			results = convertResultSetToList(rs);
-			Logger.printListOfHashMaps(results);
+			// Logger.printListOfHashMaps(results);
 			rs.close();
 			st.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		String rowExists = (String) results.get(0).get("exists");
-		Logger.print(rowExists);
-		return false;
+		boolean rowExists = (Boolean) results.get(0).get("exists");
+		// Logger.print(rowExists);
+		return rowExists;
+	}
+
+	public static List<String> getColumnNames(String tableName) {
+		java.sql.Statement st = null;
+		ResultSet rs = null;
+		List<HashMap<String, Object>> results = new ArrayList<HashMap<String, Object>>();
+		List<String> resultsFormatted = new ArrayList<String>();
+		try {
+			st = conn.createStatement();
+			String query = "SELECT column_name FROM information_schema.columns WHERE table_name = '" + tableName + "'";
+			// Logger.print(query);
+			rs = st.executeQuery(query);
+			results = convertResultSetToList(rs);
+			// Logger.printListOfHashMaps(results);
+			rs.close();
+			st.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		resultsFormatted = convert1DListOfHashMapsToListOfStrings(results, "column_name");
+		// Logger.printArrayListOfStrings((ArrayList<String>) resultsFormatted);
+		return resultsFormatted;
 	}
 
 	public static void copyCSVToTable(String userActionsFilepath, String tableName) {
@@ -206,7 +274,6 @@ public class PostgresController {
 
 		String SQL = "ALTER TABLE " + tableName + " ALTER COLUMN " + columnName + " TYPE " + newDataType + " USING "
 				+ columnName + "::" + newDataType;
-		Logger.print(SQL);
 		executeSQL(SQL);
 	}
 
@@ -226,7 +293,7 @@ public class PostgresController {
 		}
 
 		creationStatement += ");";
-		Logger.print(creationStatement);
+		// Logger.print(creationStatement);
 		return creationStatement;
 	}
 
@@ -278,7 +345,6 @@ public class PostgresController {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		// Logger.print(insertStatement);
 		return insertStatement;
 	}
 
@@ -313,9 +379,11 @@ public class PostgresController {
 			dropTable("testTable");
 			createTable("testTable", testColNames);
 			addColumn("testTable", "oasdfasdf", "VARCHAR(3)");
+			getColumnNames("cards");
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
 	}
 }

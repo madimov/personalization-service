@@ -20,7 +20,7 @@ public class PersonalizationApplication {
 	}
 
 	public static void setupSegmentTagInterestTable() {
-		InterestHandler.fillSTINCItable();
+		InterestHandler.generateInterestProbabilities();
 	}
 
 	// =====================================================================
