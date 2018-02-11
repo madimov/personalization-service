@@ -16,7 +16,6 @@ public class UserHandler {
 
 	private static final String userActionsFilePath = "/home/mikus/user_actions.csv";
 	private static final String userSegmentsFilePath = "/home/mikus/user_segments.csv";
-	private static final Logger logger = new Logger();
 
 	// =====================================================================
 	// ===================== GETTERS & SETTERS =============================
@@ -155,7 +154,6 @@ public class UserHandler {
 		processPositiveInitialReactionFeedback();
 	}
 
-	// TODO refactor these 3 huge funcs into 1 with a for loop and many if-else-if's
 	public static void processNegativeInitialReactionFeedback() {
 		try {
 			PostgresController.updateTable("user_actions_UNPROCESSED", "interest_index", "0",

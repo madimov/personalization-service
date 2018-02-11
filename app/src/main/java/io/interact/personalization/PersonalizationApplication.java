@@ -38,7 +38,6 @@ public class PersonalizationApplication {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	// =====================================================================

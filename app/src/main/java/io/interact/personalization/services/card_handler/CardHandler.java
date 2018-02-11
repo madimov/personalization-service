@@ -41,10 +41,11 @@ public class CardHandler {
 							id = JsonPath.parse(cards).read("$.data.[" + cardIndex + "].id");
 							metaDataContentType = JsonPath.parse(cards)
 									.read("$.data.[" + cardIndex + "].metadata.contentType");
-							Logger.print(id);
-							Logger.print(metaDataContentType);
+							// Logger.print(id);
+							// Logger.print(metaDataContentType);
+							String labeledCardTag = metaDataContentType.replaceAll(" ", "_").toLowerCase();
 							// TODO if this tag isn't already in cards table, add it as a new column
-							addCardToTable(id, metaDataContentType);
+							addCardToTable(id, labeledCardTag);
 						}
 					} catch (Exception e) {
 						// FIXME don't ignore exception here... it's bad practice
@@ -76,14 +77,26 @@ public class CardHandler {
 		}
 	}
 
-	public static void addCardToTable(String id, String metaDataContentType) {
-
-		String[] columnNames = new String[2];
-		columnNames[0] = "card_id";
-		columnNames[1] = metaDataContentType.replaceAll(" ", "_").toLowerCase();
-		String[] columnValues = new String[2];
-		columnValues[0] = id.toLowerCase();
-		columnValues[1] = "true";
+	public static void addCardToTable(String id, String labeledCardTag) {
+		// Logger.print("adding card " + id + " with tag " + labeledCardTag);
+		List<String> allCardTags = new ArrayList<String>();
+		allCardTags = getAllCardTags();
+		List<String> columnNames = new ArrayList<String>();
+		List<String> columnValues = new ArrayList<String>();
+		columnNames.add("card_id");
+		columnValues.add("'" + id.toLowerCase() + "'"); // is toLowerCase necessary?
+		for (int i = 0; i < allCardTags.size(); i++) {
+			String cardTag = allCardTags.get(i);
+			columnNames.add(cardTag);
+			// Logger.print("cardTag = " + cardTag + ", labeledCardTag = " +
+			// labeledCardTag);
+			if (cardTag.equals(labeledCardTag)) {
+				// Logger.print(cardTag + " == " + labeledCardTag);
+				columnValues.add("true");
+			} else { // FIXME avoid this else by just setting false tag values as default in postgres
+				columnValues.add("false");
+			}
+		}
 		try {
 			PostgresController.insertIntoTable("cards", columnNames, columnValues);
 		} catch (SQLException e) {
@@ -126,11 +139,46 @@ public class CardHandler {
 		return cardsWithTags;
 	}
 
+	public static boolean cardHasTag(String cardID) {
+
+		boolean cardHasTag;
+		List<String> columnToCheck = new ArrayList<String>();
+		columnToCheck.add("card_id");
+		List<String> valueToCheck = new ArrayList<String>();
+		valueToCheck.add("'" + cardID + "'");
+
+		cardHasTag = PostgresController.checkRowExists("cards", columnToCheck, valueToCheck);
+		// Logger.print(cardHasTag);
+		return cardHasTag;
+	}
+
+	public static List<String> getTagValuesOfCard(String cardID) {
+
+		List<String> tagValuesOfCard = new ArrayList<String>();
+		List<String> columnsToReturn = new ArrayList<String>();
+		List<String> columnToCheck = new ArrayList<String>();
+		columnToCheck.add("card_id");
+		List<String> valueToCheck = new ArrayList<String>();
+		valueToCheck.add("'" + cardID + "'");
+
+		columnsToReturn = getAllCardTags();
+		tagValuesOfCard = PostgresController.selectRow("cards", columnToCheck, valueToCheck, columnsToReturn);
+		// Logger.printArrayListOfStrings((ArrayList<String>) tagValuesOfCard);
+		List<String> tagsOfCard = new ArrayList<String>();
+		for (int i = 0; i < tagValuesOfCard.size(); i++) {
+			String tagValue = tagValuesOfCard.get(i);
+			if (tagValue.equals("true")) {
+				String tag = columnsToReturn.get(i);
+				tagsOfCard.add(tag);
+			}
+		}
+		return tagsOfCard;
+	}
+
 	// =====================================================================
 	// ========================== MAIN =====================================
 	// =====================================================================
 	public static void main(String[] args) throws Exception {
 		importCards();
 	}
-
 }

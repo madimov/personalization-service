@@ -160,7 +160,7 @@ public class InterestHandler {
 
 	public static float generateTagInterestProbabilityForUserWithSubSegments(String cardTag, List<String> subSegments) {
 
-		float userInterestProbability;
+		float userInterestProbability = 0; // set to ZERO by default which is the output if no data for any segments
 		float subSegmentInterestProbabilitySum = 0;
 		int numSubSegmentsWithData = 0;
 		float subSegmentInterestProbability;
@@ -173,8 +173,10 @@ public class InterestHandler {
 				numSubSegmentsWithData++;
 			}
 		}
-		userInterestProbability = subSegmentInterestProbabilitySum / numSubSegmentsWithData;
-		// Logger.print(userInterestProbability);
+		if (numSubSegmentsWithData > 0) {
+			userInterestProbability = subSegmentInterestProbabilitySum / numSubSegmentsWithData;
+		}
+		Logger.print(userInterestProbability);
 		return userInterestProbability;
 	}
 
@@ -204,6 +206,30 @@ public class InterestHandler {
 		return overallUserTagInterestProbability;
 	}
 
+	public static float generateCardInterestProbabilityForUser(String cardID, String userID) {
+
+		List<String> tagsOfCard = new ArrayList<String>();
+		tagsOfCard = CardHandler.getTagValuesOfCard(cardID);
+		// Logger.printArrayListOfStrings((ArrayList<String>) tagsOfCard);
+
+		List<String> subSegments = new ArrayList<String>();
+		subSegments = UserHandler.getUserSubSegments(userID);
+
+		float userCardInterestProbability;
+		float userTagInterestProbabilitySum = 0;
+		int numTags = tagsOfCard.size();
+		Logger.print(numTags);
+
+		for (int k = 0; k < numTags; k++) {
+			String cardTag = tagsOfCard.get(k);
+			Logger.print(cardTag);
+			userTagInterestProbabilitySum += generateTagInterestProbabilityForUserWithSubSegments(cardTag, subSegments);
+		}
+		userCardInterestProbability = userTagInterestProbabilitySum / numTags;
+		Logger.print(userCardInterestProbability);
+		return userCardInterestProbability;
+	}
+
 	// =====================================================================
 	// ========================== MAIN =====================================
 	// =====================================================================
@@ -212,18 +238,24 @@ public class InterestHandler {
 		PostgresController.connectDatabase();
 
 		try {
-			// UserHandler.importUserData();
-			// UserHandler.processUserSegmentData();
-			// UserHandler.processUserActionsData();
-			// resetProbabilitiesInSTINCItable();
-			// generateInterestProbabilities();
+			UserHandler.importUserData();
+			UserHandler.processUserSegmentData();
+			UserHandler.processUserActionsData();
+			resetProbabilitiesInSTINCItable();
+			generateInterestProbabilities();
 
-			// checkExistsSubSegmentTagInterestProbability("'20-29'", "drink");
-			// getSubSegmentTagInterestProbability("'20-29'", "drink");
-			// checkExistsSubSegmentTagInterestProbability("'lifestyle'", "drink");
-			// getSubSegmentTagInterestProbability("'lifestyle'", "drink");
+			checkExistsSubSegmentTagInterestProbability("'20-29'", "drink");
+			getSubSegmentTagInterestProbability("'20-29'", "drink");
+			checkExistsSubSegmentTagInterestProbability("'lifestyle'", "drink");
+			getSubSegmentTagInterestProbability("'lifestyle'", "drink");
 
-			generateOverallUserInterestProbability("1515541645148868");
+			String userID = "1515541645148868";
+			generateOverallUserInterestProbability(userID);
+
+			String cardID = "c14716e2-cf79-491d-8c46-169cbab60944";
+			if (CardHandler.cardHasTag(cardID)) {
+				generateCardInterestProbabilityForUser(cardID, userID);
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
