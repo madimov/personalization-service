@@ -60,6 +60,7 @@ public class UserHandler {
 		segmentDataLabels.add("age_RAW");
 		segmentDataLabels.add("gender");
 		segmentDataLabels.add("goal");
+		// TODO move these labels to config
 
 		try {
 			PostgresController.dropTable("user_segments_UNPROCESSED");
@@ -93,6 +94,8 @@ public class UserHandler {
 			e.printStackTrace();
 		}
 	}
+
+	// TODO find more specific and descriptive func name than 'process...'
 
 	public static void processUserSegmentData() {
 

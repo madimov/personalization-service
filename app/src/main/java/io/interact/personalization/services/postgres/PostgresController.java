@@ -18,8 +18,12 @@ public class PostgresController {
 
 	public static Connection conn = null;
 
+	// =====================================================================
+	// ========================== DATABASE =================================
+	// =====================================================================
+
 	public static void connectDatabase() throws SQLException {
-		// TODO Auto-generated method stub
+		// TODO store these settings in config
 		String url = "jdbc:postgresql://localhost/personalization-service";
 		// if ssl issues, set url to:
 		// "sslfactory=org.postgresql.ssl.NonValidatingFactory"
@@ -34,6 +38,15 @@ public class PostgresController {
 		// TODO Auto-generated method stub
 		conn.close();
 		conn = null;
+	}
+
+	public static boolean checkDatabaseConnected() throws SQLException {
+		// TODO Auto-generated method stub
+		if (conn == null) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 	// =====================================================================
@@ -54,6 +67,7 @@ public class PostgresController {
 
 	public static void createTable(String tableName, List<String> columnNames) throws SQLException {
 		// FIXME find way to transfer column constraints WHILE making table here
+		// TODO pass in data types for each column
 		/*
 		 * CREATE TABLE user_segments ( user_id VARCHAR(50) PRIMARY KEY, language
 		 * VARCHAR(50), age VARCHAR(50), gender VARCHAR(50), goal VARCHAR(50));
@@ -79,8 +93,11 @@ public class PostgresController {
 	}
 
 	public static void copyCSVToTable(String userActionsFilepath, String tableName) {
-		// FIXME this requires VARCHAR initial table, import, & manual data type change
-		// ... also, tables must be truncated before they can be imported again
+		// FIXME this requires VARCHAR initial table, import, & manual data type change.
+		// ... also, tables must be truncated before they can be imported again.
+		// well, this makes sense actually. i just need to automate the whole process of
+		// creating the table from the csv columns. the bot outputs csv with column
+		// names at the top, so make sure this app can handle that.
 		String SQL = "COPY " + tableName + " FROM '" + userActionsFilepath + "' WITH (FORMAT csv);";
 		executeSQLUpdate(SQL);
 	}
@@ -95,7 +112,15 @@ public class PostgresController {
 
 	public static void insertIntoTable(String tableName, List<String> columnNames, List<String> columnValues)
 			throws SQLException {
+		// TODO find out: can multiple rows be inserted at once?
 		String SQL = buildInsertStatement(tableName, columnNames, columnValues);
+		executeSQLUpdate(SQL);
+	}
+
+	public static void deleteRows(String tableName, List<String> columnNames, List<String> columnValues)
+			throws SQLException {
+		String checkStatement = buildCheckStatement(columnNames, columnValues);
+		String SQL = "DELETE FROM " + tableName + " WHERE " + checkStatement;
 		executeSQLUpdate(SQL);
 	}
 
@@ -105,6 +130,7 @@ public class PostgresController {
 		if (condition != "") {
 			SQL += " WHERE " + condition;
 		}
+		// Logger.print(SQL);
 		executeSQLUpdate(SQL);
 	}
 
@@ -150,6 +176,18 @@ public class PostgresController {
 		return tableExists;
 	}
 
+	public static boolean checkTableHasContent(String tableName) throws SQLException {
+		String SQL = "SELECT count(*) FROM (SELECT 1 FROM " + tableName + " LIMIT 1) AS t";
+		List<HashMap<String, Object>> results = new ArrayList<HashMap<String, Object>>();
+		results = executeSQLQuery(SQL);
+		long count = (long) results.get(0).get("count");
+		boolean tableExists = false;
+		if (count > 0) {
+			tableExists = true;
+		}
+		return tableExists;
+	}
+
 	public static List<HashMap<String, Object>> selectTable(String tableName) throws SQLException {
 		String SQL = "SELECT * FROM " + tableName;
 		List<HashMap<String, Object>> results = new ArrayList<HashMap<String, Object>>();
@@ -163,11 +201,13 @@ public class PostgresController {
 		results = executeSQLQuery(SQL);
 		// postgres row count is returned as long, so cast as int
 		int numRowsInTable = toIntExact((long) results.get(0).get("count"));
+		// Logger.print(numRowsInTable);
 		return numRowsInTable;
 	}
 
 	public static List<String> getColumnNames(String tableName) {
-		String SQL = "SELECT column_name FROM information_schema.columns WHERE table_name = '" + tableName + "'";
+		String SQL = "SELECT column_name FROM information_schema.columns WHERE table_name = '" + tableName.toLowerCase()
+				+ "'";
 		List<HashMap<String, Object>> results = new ArrayList<HashMap<String, Object>>();
 		results = executeSQLQuery(SQL);
 		List<String> resultsFormatted = new ArrayList<String>();
@@ -176,7 +216,21 @@ public class PostgresController {
 		return resultsFormatted;
 	}
 
+	public static String getColumnDataType(String tableName, String columnName) {
+		// TODO instead of this func, use generic selectColumnCells func by adding extra
+		// params, such as schema
+		String SQL = "SELECT data_type FROM information_schema.columns WHERE table_name = '" + tableName.toLowerCase()
+				+ "' AND column_name = '" + columnName.toLowerCase() + "'";
+		List<HashMap<String, Object>> results = new ArrayList<HashMap<String, Object>>();
+		results = executeSQLQuery(SQL);
+		// Logger.printListOfHashMaps(results);
+		String columnDataType = (String) results.get(0).get("data_type");
+		return columnDataType;
+	}
+
+	// TODO merge this func with selectColumnCells...return List of Hash Maps
 	public static List<HashMap<String, Object>> selectColumn(String tableName, String columnName) throws SQLException {
+		// FIXME should return a list of strings, like all other column access funcs
 		String SQL = "SELECT segment, " + columnName + " FROM " + tableName + ";";
 		// FIXME "segment" should be passed in!
 		List<HashMap<String, Object>> results = new ArrayList<HashMap<String, Object>>();
@@ -188,8 +242,10 @@ public class PostgresController {
 		String SQL = "SELECT DISTINCT " + columnName + " FROM " + tableName;
 		List<HashMap<String, Object>> results = new ArrayList<HashMap<String, Object>>();
 		results = executeSQLQuery(SQL);
+		// Logger.printListOfHashMaps(results);
 		List<String> resultsFormatted = new ArrayList<String>();
 		resultsFormatted = Operator.convertListOf1DHashMapsToListOfStrings(results, columnName);
+		// Logger.printArrayListOfStrings((ArrayList<String>) resultsFormatted);
 		return resultsFormatted;
 	}
 
@@ -210,6 +266,7 @@ public class PostgresController {
 		String SQL = "SELECT " + selectStatement + " FROM " + tableName + " WHERE " + checkStatement;
 		List<HashMap<String, Object>> results = new ArrayList<HashMap<String, Object>>();
 		results = executeSQLQuery(SQL);
+		// Logger.printListOfHashMaps(results);
 		List<String> resultsFormatted = new ArrayList<String>();
 		resultsFormatted = Operator.convertListOfOneHashMapToListOfStrings(results);
 		// Logger.printArrayListOfStrings((ArrayList<String>) resultsFormatted);
@@ -272,7 +329,7 @@ public class PostgresController {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
+		// Logger.print(checkStatement);
 		return checkStatement;
 	}
 
@@ -300,6 +357,7 @@ public class PostgresController {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		// Logger.print(insertStatement);
 		return insertStatement;
 	}
 
@@ -317,6 +375,7 @@ public class PostgresController {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		// Logger.print(selectStatement);
 		return selectStatement;
 	}
 
