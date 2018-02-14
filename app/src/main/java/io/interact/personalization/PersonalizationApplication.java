@@ -30,11 +30,12 @@ public class PersonalizationApplication {
 		InterestHandler.generateInterestProbabilities();
 	}
 
-	public static void generateInterestProbabilities() {
+	public static void run() {
 		try {
 			PostgresController.connectDatabase();
 			setupInputTables();
 			setupSegmentTagInterestTable();
+			// ...output predictions!
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -44,6 +45,6 @@ public class PersonalizationApplication {
 	// ========================== MAIN =====================================
 	// =====================================================================
 	public static void main(String[] args) throws Exception {
-		generateInterestProbabilities();
+		run();
 	}
 }

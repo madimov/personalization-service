@@ -8,6 +8,7 @@ import java.util.List;
 import io.interact.personalization.services.csv.CSVParser;
 import io.interact.personalization.services.postgres.PostgresController;
 import io.interact.personalization.utils.Logger;
+import io.interact.personalization.utils.Operator;
 
 public class UserHandler {
 
@@ -269,8 +270,9 @@ public class UserHandler {
 		return segmentsAndSubSegments;
 	}
 
-	public static List<String> getSegments() {
+	public static List<String> getSegments() { // TODO rename getSegmentLabels
 		// TODO decide: move this to InterestHandler, as it accesses STINCI table?
+		// or... should it check the column names of user_segments
 		List<String> segments = new ArrayList<String>();
 		try {
 			segments = PostgresController.selectDistinctFromColumn("STINCI_recipes", "segment");
@@ -284,6 +286,30 @@ public class UserHandler {
 
 	public static boolean existsUserWithSubSegments(List<String> segments, List<String> subSegments) {
 		return PostgresController.checkRowExists("user_segments", segments, subSegments);
+	}
+
+	public static boolean checkUserHasSegment(String userID, String segment) {
+		List<String> columnsToCheck = new ArrayList<String>();
+		columnsToCheck.add("user_id");
+		columnsToCheck.add(segment);
+		List<String> valuesToCheck = new ArrayList<String>();
+		valuesToCheck.add("'" + userID + "'");
+		valuesToCheck.add("NOT NULL");
+		return PostgresController.checkRowExists("user_segments", columnsToCheck, valuesToCheck);
+	}
+
+	public static boolean checkUserHasAtleastOneSegment(String userID) {
+		boolean userHasAtleastOneSegment = false;
+		List<String> segmentLabels = getSegments();
+		boolean userHasSegment;
+		for (int i = 0; i < segmentLabels.size(); i++) {
+			String segmentLabel = segmentLabels.get(i);
+			userHasSegment = checkUserHasSegment(userID, segmentLabel);
+			if (userHasSegment == true) {
+				userHasAtleastOneSegment = true;
+			}
+		}
+		return userHasAtleastOneSegment;
 	}
 
 	public static boolean existsUserWhoGaveFeedbackToCard(String cardID) {
@@ -362,6 +388,21 @@ public class UserHandler {
 		userSubSegments = PostgresController.selectRow("user_segments", columnToCheck, valueToCheck, columnsToReturn);
 		// Logger.printArrayListOfStrings((ArrayList<String>) userSubSegments);
 		return userSubSegments;
+	}
+
+	public static List<String> getAllUsers() {
+		List<HashMap<String, Object>> allUsers = new ArrayList<HashMap<String, Object>>();
+		List<String> userIDs = new ArrayList<String>();
+		;
+		try {
+			allUsers = PostgresController.selectColumn("user_segments", "user_id");
+			userIDs = Operator.convertListOf1DHashMapsToListOfStrings(allUsers, "user_id");
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// Logger.printArrayListOfStrings((ArrayList<String>) userIDs);
+		return userIDs;
 	}
 
 	// =====================================================================

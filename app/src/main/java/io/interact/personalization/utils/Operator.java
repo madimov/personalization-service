@@ -78,11 +78,6 @@ public class Operator {
 		return values;
 	}
 
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
-	}
-
 	public static List<HashMap<String, Object>> convertResultSetToList(ResultSet rs) throws SQLException {
 		// taken from:
 		// https://stackoverflow.com/questions/7507121/efficient-way-to-handle-resultset-in-java
@@ -99,5 +94,46 @@ public class Operator {
 		}
 
 		return list;
+	}
+
+	public static String getKeyOfMaxValueFromStringFloatHashMap(HashMap<String, Object> hashMap) {
+		String keyOfMaxValue = "";
+		Set<String> keys = hashMap.keySet();
+		float maxValue = 0;
+		try {
+			for (String key : keys) {
+				float value = (float) hashMap.get(key);
+				if (value > maxValue) {
+					maxValue = value;
+					keyOfMaxValue = key;
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return keyOfMaxValue;
+	}
+
+	public static String getKeyOfMinValueFromStringFloatHashMap(HashMap<String, Object> hashMap) {
+		String keyOfMinValue = "";
+		Set<String> keys = hashMap.keySet();
+		float minValue = 1;
+		try {
+			for (String key : keys) {
+				float value = (float) hashMap.get(key);
+				if (value < minValue) {
+					minValue = value;
+					keyOfMinValue = key;
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return keyOfMinValue;
+	}
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+
 	}
 }

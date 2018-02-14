@@ -92,13 +92,21 @@ public class PostgresController {
 		executeSQLUpdate(SQL);
 	}
 
-	public static void copyCSVToTable(String userActionsFilepath, String tableName) {
+	public static void copyCSVToTable(String filePath, String tableName) {
 		// FIXME this requires VARCHAR initial table, import, & manual data type change.
 		// ... also, tables must be truncated before they can be imported again.
 		// well, this makes sense actually. i just need to automate the whole process of
 		// creating the table from the csv columns. the bot outputs csv with column
 		// names at the top, so make sure this app can handle that.
-		String SQL = "COPY " + tableName + " FROM '" + userActionsFilepath + "' WITH (FORMAT csv);";
+		String SQL = "COPY " + tableName + " FROM '" + filePath + "' WITH (FORMAT csv);";
+		executeSQLUpdate(SQL);
+	}
+
+	public static void copyTableToCSV(String filePath, String tableName) {
+		String SQL = "COPY " + tableName + " TO '" + filePath + "' WITH (FORMAT csv);";
+		// COPY interest_predictions TO '/home/mikus/interest_predictions.csv' WITH
+		// (FORMAT csv);
+		// COPY products_273 TO '/tmp/products_199.csv' WITH (FORMAT CSV, HEADER);
 		executeSQLUpdate(SQL);
 	}
 
@@ -229,9 +237,21 @@ public class PostgresController {
 	}
 
 	// TODO merge this func with selectColumnCells...return List of Hash Maps
+	// public static List<HashMap<String, Object>> selectColumn(String tableName,
+	// String columnName) throws SQLException {
+	// // FIXME should return a list of strings, like all other column access funcs
+	// String SQL = "SELECT segment, " + columnName + " FROM " + tableName + ";";
+	// // FIXME "segment" should be passed in!
+	// List<HashMap<String, Object>> results = new ArrayList<HashMap<String,
+	// Object>>();
+	// results = executeSQLQuery(SQL);
+	// return results;
+	// }
+
+	// temp better version without segment hardwired into query:
 	public static List<HashMap<String, Object>> selectColumn(String tableName, String columnName) throws SQLException {
 		// FIXME should return a list of strings, like all other column access funcs
-		String SQL = "SELECT segment, " + columnName + " FROM " + tableName + ";";
+		String SQL = "SELECT " + columnName + " FROM " + tableName + ";";
 		// FIXME "segment" should be passed in!
 		List<HashMap<String, Object>> results = new ArrayList<HashMap<String, Object>>();
 		results = executeSQLQuery(SQL);
@@ -252,6 +272,9 @@ public class PostgresController {
 	public static boolean checkRowExists(String tableName, List<String> columnsToCheck, List<String> valuesToCheck) {
 		String checkStatement = buildCheckStatement(columnsToCheck, valuesToCheck);
 		String SQL = "SELECT EXISTS (SELECT 1 FROM " + tableName + " WHERE " + checkStatement + ")";
+		// Logger.printArrayListOfStrings((ArrayList<String>) columnsToCheck);
+		// Logger.printArrayListOfStrings((ArrayList<String>) valuesToCheck);
+		// Logger.print(SQL);
 		List<HashMap<String, Object>> results = new ArrayList<HashMap<String, Object>>();
 		results = executeSQLQuery(SQL);
 		boolean rowExists = (Boolean) results.get(0).get("exists");
@@ -315,8 +338,9 @@ public class PostgresController {
 
 		try {
 			for (int col = 0; col < columnsToCheck.size(); col++) {
+				// Logger.print(col + "/" + columnsToCheck.size() + ": " + checkStatement);
 				checkStatement += columnsToCheck.get(col);
-				if (valuesToCheck.get(col).contains("NULL")) {
+				if (valuesToCheck.get(col) == "NULL" || valuesToCheck.get(col) == "NOT NULL") {
 					checkStatement += " IS ";
 				} else {
 					checkStatement += " = ";

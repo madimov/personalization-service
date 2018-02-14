@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 public class Logger {
 
@@ -13,10 +14,24 @@ public class Logger {
 	}
 
 	public static void printListOfHashMaps(List<HashMap<String, Object>> results) {
+		// TODO rename argument
 
 		try {
 			for (int i = 0; i < results.size(); i++) {
 				System.out.println(results.get(i));
+			}
+		} catch (Exception e) {
+			System.out.println("exception!" + e);
+		}
+	}
+
+	public static void printHashMap(HashMap<String, Object> hashMap) {
+
+		Set<String> keys = hashMap.keySet();
+		try {
+			for (String key : keys) {
+				String value = (String) hashMap.get(key).toString();
+				System.out.println(key + ": " + value);
 			}
 		} catch (Exception e) {
 			System.out.println("exception!" + e);
