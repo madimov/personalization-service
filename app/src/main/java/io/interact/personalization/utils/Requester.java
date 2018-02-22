@@ -1,18 +1,28 @@
 package io.interact.personalization.utils;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 import org.json.JSONObject;
 
-import io.interact.personalization.services.postgres.PostgresController;
+import io.interact.personalization.db.PostgresController;
 
 public class Requester {
+
+	private static String internalApiUsername = "miko@interact.io";
+	private static String internalApiPassword = "100%JuicePlus";
 
 	public static void sendGetRequest() {
 		// taken from:
@@ -42,41 +52,60 @@ public class Requester {
 		}
 	}
 
-	public static String sendPostRequest(String url) {
+	public static String sendPostRequest(HttpURLConnection connection) throws IOException {
 		// largely taken from:
 		// https://stackoverflow.com/questions/2793150/using-java-net-urlconnection-to-fire-and-handle-http-requests
 
-		String query = null;
-		HttpURLConnection httpConnection = null;
 		InputStream response = null;
 		String responseBody = null;
 
 		try {
-			httpConnection = (HttpURLConnection) new URL(url).openConnection();
-			httpConnection.setRequestMethod("POST");
+			connection.setDoOutput(true);
+			connection.setInstanceFollowRedirects(false);
+			connection.setRequestMethod("POST");
 
 			JSONObject jsonBody = new JSONObject();
-			jsonBody.put("defaultOperator", "AND");
-			jsonBody.put("filters", new String[] {});
-			jsonBody.put("query", "");
-			System.out.println(jsonBody);
+			jsonBody.put("username", internalApiUsername);
+			jsonBody.put("password", internalApiPassword);
+			Logger.print("jsonBody = " + jsonBody.toString());
+			// connection.setRequestProperty("body", jsonBody.toString());
+			connection.setRequestProperty("Content-Type", "application/json");
 
-			httpConnection.setRequestProperty("Content-Type", "application/json");
-			httpConnection.setRequestProperty("authToken", "kss_0vYbm3ldqVk1AqVaDb2t5X");
-			// TODO move tokens and domains to config
-			httpConnection.setRequestProperty("body", jsonBody.toString());
+			Map<String, List<String>> requestProperties = connection.getRequestProperties();
+			Logger.print("requestProperties = " + requestProperties.toString());
 
-			response = httpConnection.getInputStream();
+			Map<String, List<String>> headerFields = connection.getHeaderFields();
+			Logger.print("headerFields = " + headerFields.toString());
+
+			OutputStreamWriter wr = new OutputStreamWriter(connection.getOutputStream());
+			wr.write("body = " + jsonBody.toString());
+			wr.close();
+
+			// response = connection.getInputStream();
+			// Logger.print("response = " + response);
+
+			BufferedInputStream in = new BufferedInputStream(connection.getInputStream());
+			int i = 0;
+			while ((i = in.read()) != -1) {
+				System.out.write(i);
+			}
+			in.close();
 
 			Scanner scanner = new Scanner(response);
 			responseBody = scanner.useDelimiter("\\A").next();
-			Logger.print(responseBody);
+			scanner.close();
+			Logger.print("responseBody = " + responseBody);
 
-			int status = httpConnection.getResponseCode();
-			Logger.print(status);
+			int status = connection.getResponseCode();
+			Logger.print("status = " + status);
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+			String line = null;
+			while ((line = in.readLine()) != null) {
+				Logger.print("~~~" + line);
+			}
+			// e.printStackTrace();
 		}
 		return responseBody;
 	}

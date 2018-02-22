@@ -1,4 +1,4 @@
-package io.interact.personalization.services.csv;
+package io.interact.personalization.utils;
 
 import static org.junit.Assert.*;
 

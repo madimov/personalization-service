@@ -1,4 +1,4 @@
-package io.interact.personalization.services.csv;
+package io.interact.personalization.utils;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;

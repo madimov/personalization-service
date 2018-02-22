@@ -1,4 +1,4 @@
-package io.interact.personalization.services.postgres;
+package io.interact.personalization.services.db;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -18,6 +18,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.interact.personalization.db.PostgresController;
 import io.interact.personalization.utils.Operator;
 
 public class PostgresControllerTest {

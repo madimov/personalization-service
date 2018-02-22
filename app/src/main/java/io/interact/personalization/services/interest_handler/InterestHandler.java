@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import io.interact.personalization.db.PostgresController;
 import io.interact.personalization.services.card_handler.CardHandler;
-import io.interact.personalization.services.postgres.PostgresController;
 import io.interact.personalization.services.user_handler.UserHandler;
 import io.interact.personalization.utils.Logger;
 import io.interact.personalization.utils.Operator;
@@ -407,6 +407,24 @@ public class InterestHandler {
 			}
 		}
 	}
+
+	// TODO finish writing
+
+	// public static void createSTACITable() {
+	// // Logger.print("... from createSTACITable");
+	// List<String> allSubgments = UserHandler.getSubSegmentLabels();
+	// List<String> allTags = CardHandler.getAllCardTags();
+	//
+	// for (int i = 0; i < allSubgments.size(); i++) {
+	// String subSegment1 = allSubgments.get(i);
+	// for (int j = 0; j < allSubgments.size(); j++) {
+	// String subSegment2 = allSubgments.get(j);
+	// for (int k = 0; k < allTags.size(); k++) {
+	// String cardTag = allTags.get(k);
+	// }
+	// }
+	// }
+	// }
 
 	// =====================================================================
 	// ========================== MAIN =====================================

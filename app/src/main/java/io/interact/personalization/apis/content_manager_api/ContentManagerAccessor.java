@@ -1,4 +1,4 @@
-package io.interact.personalization.services.content_manager;
+package io.interact.personalization.apis.content_manager_api;
 
 public class ContentManagerAccessor {
 

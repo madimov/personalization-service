@@ -1,13 +1,17 @@
 package io.interact.personalization.services.card_handler;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONObject;
+
 import com.jayway.jsonpath.JsonPath;
 
 import io.interact.personalization.config.Config;
-import io.interact.personalization.services.postgres.PostgresController;
+import io.interact.personalization.db.PostgresController;
 import io.interact.personalization.utils.Logger;
 import io.interact.personalization.utils.Requester;
 import net.minidev.json.JSONArray;
@@ -25,12 +29,24 @@ public class CardHandler {
 	public static void UpdateCardsTable() {
 		String url = null;
 		String cards = null;
+		HttpURLConnection httpConnection = null;
 
 		try {
 			for (int i = 0; i < Config.getHundredsOfCardsAvailable(); i++) {
 				url = "https://contentmanager-lb.interact.io/content-cards/search?offset=" + i * 100 + "&limit=100";
 				// hard-set limit of Content Manager is 100 cards
-				cards = Requester.sendPostRequest(url);
+				httpConnection = (HttpURLConnection) new URL(url).openConnection();
+				JSONObject jsonBody = new JSONObject();
+				jsonBody.put("defaultOperator", "AND");
+				jsonBody.put("filters", new String[] {});
+				jsonBody.put("query", "muesli");
+				System.out.println(jsonBody);
+				httpConnection.setRequestProperty("Content-Type", "application/json");
+				httpConnection.setRequestProperty("authToken", "kss_0vYtnH7M8pcUBjlGJ95REv");
+				// TODO move tokens and domains to config
+				httpConnection.setRequestProperty("body", jsonBody.toString());
+
+				cards = Requester.sendPostRequest(httpConnection);
 
 				String id;
 				String metaDataContentType;

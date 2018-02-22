@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import io.interact.personalization.services.csv.CSVParser;
-import io.interact.personalization.services.postgres.PostgresController;
+import io.interact.personalization.db.PostgresController;
+import io.interact.personalization.utils.CSVParser;
 import io.interact.personalization.utils.Logger;
 import io.interact.personalization.utils.Operator;
 
@@ -281,6 +281,17 @@ public class UserHandler {
 			e.printStackTrace();
 		}
 		// Logger.printArrayListOfStrings((ArrayList<String>) segments);
+		return segments;
+	}
+
+	public static List<String> getSubSegmentLabels() {
+		// TODO decide: move this to InterestHandler, as it accesses STINCI table?
+		List<String> segments = new ArrayList<String>();
+		try {
+			segments = PostgresController.selectDistinctFromColumn("STINCI_recipes", "sub_segment");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		return segments;
 	}
 

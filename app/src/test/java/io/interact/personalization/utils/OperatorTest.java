@@ -16,7 +16,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.interact.personalization.services.postgres.PostgresController;
+import io.interact.personalization.db.PostgresController;
 
 public class OperatorTest {
 
@@ -78,7 +78,10 @@ public class OperatorTest {
 		try {
 			PostgresController.connectDatabase();
 			st = PostgresController.conn.createStatement();
-			PostgresController.dropTable("testTable");
+			boolean testTableExists = PostgresController.checkTableExists("testTable");
+			if (testTableExists == true) {
+				PostgresController.dropTable("testTable");
+			}
 			PostgresController.createTable("testTable", testColNames);
 			PostgresController.getColumnNames("testTable");
 			PostgresController.insertIntoTable("testTable", testColNames, testColValues);

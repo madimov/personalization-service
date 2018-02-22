@@ -1,4 +1,4 @@
-package io.interact.personalization.services.postgres;
+package io.interact.personalization.db;
 
 import static java.lang.Math.toIntExact;
 
@@ -408,37 +408,5 @@ public class PostgresController {
 	// =====================================================================
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		try {
-			connectDatabase();
-			System.out.println("connected db");
-			// selectTable();
-			// System.out.println("selected table");
-			// truncateTable("cards");
-			// System.out.println("truncated table");
-			//
-			// String[] columnNames = new String[2];
-			// columnNames[0] = "card_id";
-			// columnNames[1] = "drink";
-			// String[] columnValues = new String[2];
-			// columnValues[0] = "somecardif1234123412341234";
-			// columnValues[1] = "true";
-			// insertIntoTable("cards", columnNames, columnValues);
-			// System.out.println("inserted into table");
-
-			List<String> testColNames = new ArrayList<String>();
-			testColNames.add("age");
-			testColNames.add("frogs");
-			testColNames.add("etc");
-
-			dropTable("testTable");
-			createTable("testTable", testColNames);
-			addColumn("testTable", "oasdfasdf", "VARCHAR(3)");
-			getColumnNames("testTable");
-			selectTable("testTable");
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 }
